@@ -1,0 +1,19 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  python-ci:
+    uses: ajb538/.github/.github/workflows/_python-ci.yml@main
+    secrets: inherit
+
+  docker-build:
+    needs: python-ci
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    uses: ajb538/.github/.github/workflows/_docker-build.yml@main
+    with:
+      image-name: nanoclaw-sidecar
+    secrets: inherit
