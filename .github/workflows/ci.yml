@@ -6,6 +6,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   python-ci:
     uses: ajb538/.github/.github/workflows/_python-ci.yml@main
