@@ -20,3 +20,12 @@ jobs:
     uses: ajb538/.github/.github/workflows/_docker-build.yml@main
     with:
       image-name: nanoclaw-sidecar
+
+  deploy:
+    needs: docker-build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    uses: ajb538/.github/.github/workflows/_deploy-unraid.yml@main
+    with:
+      service-name: nanoclaw-sidecar
+      image-name: nanoclaw-sidecar
+    secrets: inherit
