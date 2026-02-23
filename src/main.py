@@ -80,11 +80,15 @@ async def send(req: SendRequest) -> dict:
 
     jid = _GROUPS.get(group_name)
     if jid is None:
-        raise HTTPException(status_code=404, detail=f"Group '{group_name}' not found in groups config")
+        raise HTTPException(
+            status_code=404, detail=f"Group '{group_name}' not found in groups config"
+        )
 
     ipc_dir = _DATA_DIR / "ipc" / "main" / "messages"
     if not ipc_dir.exists():
-        raise HTTPException(status_code=503, detail="IPC messages directory does not exist")
+        raise HTTPException(
+            status_code=503, detail="IPC messages directory does not exist"
+        )
 
     filename = f"webhook-{int(time.time() * 1000)}.json"
     ipc_file = ipc_dir / filename

@@ -4,7 +4,7 @@ Tests follow TDD: written before implementation to define expected behaviour.
 """
 
 import json
-import os
+from collections.abc import AsyncGenerator
 from pathlib import Path
 
 import pytest
@@ -41,19 +41,23 @@ def app(groups_file: Path, data_dir: Path, monkeypatch: pytest.MonkeyPatch):
     # Import after env vars are set so module-level config picks them up.
     import importlib
     import src.main as m
+
     importlib.reload(m)
     return m.app
 
 
 @pytest.fixture()
-async def client(app) -> AsyncClient:
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+async def client(app) -> AsyncGenerator[AsyncClient, None]:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as c:
         yield c
 
 
 # ---------------------------------------------------------------------------
 # Health endpoint
 # ---------------------------------------------------------------------------
+
 
 async def test_health_returns_ok(client: AsyncClient):
     resp = await client.get("/health")
@@ -64,6 +68,7 @@ async def test_health_returns_ok(client: AsyncClient):
 # ---------------------------------------------------------------------------
 # POST /send — happy paths
 # ---------------------------------------------------------------------------
+
 
 async def test_send_writes_ipc_file_with_correct_format(
     client: AsyncClient, data_dir: Path
@@ -110,6 +115,7 @@ async def test_send_multiple_messages_create_separate_files(
 # POST /send — error paths
 # ---------------------------------------------------------------------------
 
+
 async def test_send_returns_404_for_unknown_group(client: AsyncClient):
     resp = await client.post("/send", json={"message": "hi", "group": "nonexistent"})
     assert resp.status_code == 404
@@ -133,8 +139,11 @@ async def test_send_returns_503_when_ipc_dir_missing(
 
     import importlib
     import src.main as m
+
     importlib.reload(m)
 
-    async with AsyncClient(transport=ASGITransport(app=m.app), base_url="http://test") as c:
+    async with AsyncClient(
+        transport=ASGITransport(app=m.app), base_url="http://test"
+    ) as c:
         resp = await c.post("/send", json={"message": "test", "group": "dev"})
     assert resp.status_code == 503
